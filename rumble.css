@@ -1,0 +1,43 @@
+* {
+	box-sizing: border-box;
+}
+
+body {
+    background-color: #4d9cc8;
+}
+
+.RumbleMenu {
+    text-align: center;
+	display: flex;
+	height: 100%;
+	flex-direction: column;
+	justify-content: center;
+}
+
+.ShowdownCorner {
+	color: white;
+	text-align: center;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+.RedCorner {
+	background-color: red;
+}
+
+.BlueCorner {
+	background-color: blue;
+}
+
+.RumbleListPage {
+	text-align: center;
+}
+
+.CustomListNewListItemHolder {
+	display: flex;
+}
+
+.CustomListNewListItemHolder input {
+	flex-shrink: 1;
+}
