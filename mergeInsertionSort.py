@@ -6,7 +6,7 @@ def merge_insertion(elements):
   print("====")
   # Base Cases
   
-  if len(elements) == 1:
+  if len(elements) <= 1:
     return elements
   
   if len(elements) == 2:
