@@ -124,7 +124,7 @@ class RumbleListsMenu extends React.Component {
 	}
 
 	componentDidMount() {
-		fetch("/lists.json")
+		fetch("./lists.json")
 		.then(r => r.json())
 		.then(json => {
 			this.setState({lists: json, ready: true});
