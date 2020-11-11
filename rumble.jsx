@@ -1,4 +1,4 @@
-const { HashRouter, Route, Link } = ReactRouterDOM;
+const { BrowserRouter, Route, Link } = ReactRouterDOM;
 
 let globalState = {listName: "", list: []};
 
@@ -76,13 +76,15 @@ class RumbleContainer extends React.Component {
 
 	render() {
 		return(
-			<HashRouter>
+			<BrowserRouter>
 				<Route exact path="/" component={RumbleMainMenu} />
 				<Route path="/PresetLists" component={RumblePresetListsMenu} />
 				<Route path="/CreateList" component={RumbleCreateList} />
 				<Route path="/Showdown" component={RumbleShowdown} />
 				<Route path="/List" component={RumbleListDisplay} />
-			</HashRouter>
+				<Route path="/Share/Presets" component={RumbleSharePresets} />
+				<Route path="/Share/Custom" component={RumbleShareCustom} />
+			</BrowserRouter>
 		);
 	}
 }
@@ -90,6 +92,18 @@ class RumbleContainer extends React.Component {
 class RumbleMainMenu extends React.Component {
 	constructor(props) {
 		super(props);
+	}
+
+	componentDidMount() {
+		const search = location.search;
+		const usp = new URLSearchParams(search);
+		const shareType = usp.get("share");
+		const id = usp.get("id");
+		if (shareType == "presets") {
+			this.props.history.push(`/Share/Presets?id=${id}`);
+		} else if (shareType == "custom") {
+			this.props.history.push(`/Share/Custom?id=${id}`);
+		}
 	}
 
 	render() {
@@ -191,6 +205,61 @@ class RumbleCustomListsMenu extends React.Component {
 	}
 }
 
+class RumbleShare extends React.Component {
+	constructor(props) {
+		super(props);
+	}
+
+	componentDidMount() {
+		const search = location.search;
+		const id = new URLSearchParams(search).get("id");
+		fetch(`https://rumblerank.herokuapp.com/${this.props.listType}?id=${id}`)
+		.then(r => r.json())
+		.then(json => {
+			if (json.length) {
+				try {
+					let title = json[0]["title"];
+					console.log(json[0]["contents"]);
+					let list = JSON.parse(json[0]["contents"]);
+					globalState.listName = title;
+					globalState.list = list;
+					this.props.history.push("/Showdown");
+				} catch (e) {
+					console.error("Could not load list");
+					console.error(json[0]["contents"]);
+					this.props.history.push("/");
+				}
+			} else {
+				this.props.history.push("/");
+			}
+		});
+	}
+
+	render() {
+		return "Loading shared list...";
+	}
+}
+
+class RumbleSharePresets extends React.Component {
+	constructor(props) {
+		super(props);
+	}
+
+	render() {
+		return <RumbleShare listType="presets" history={ this.props.history } />
+	}
+}
+
+class RumbleShareCustom extends React.Component {
+	constructor(props) {
+		super(props);
+	}
+
+	render() {
+		return <RumbleShare listType="custom" history={ this.props.history } />
+	}
+}
+
 class RumbleCreateList extends React.Component {
 	constructor(props) {
 		super(props);
@@ -202,7 +271,7 @@ class RumbleCreateList extends React.Component {
 
 	addNewItem() {
 		let newItem = document.getElementById("CustomListNewItem");
-		this.setState({list: [...this.state.list, newItem.value]}, () => newItem.value = "");
+		this.setState({list: [...this.state.list, {"name": newItem.value}]}, () => newItem.value = "");
 	}
 
 	removeItem(index) {
@@ -222,7 +291,7 @@ class RumbleCreateList extends React.Component {
 					<input id="CustomListName" className="form-control mb-4" placeholder="List Title" />
 					<ul>
 						{ this.state.list.map((item, index) => {
-							return <li className="mb-2"><span className="mr-2">{ item }</span><button type="button" className="btn btn-danger" onClick={ () => this.removeItem(index) }>X</button></li>
+							return <li className="mb-2"><span className="mr-2">{ item.name }</span><button type="button" className="btn btn-danger" onClick={ () => this.removeItem(index) }>X</button></li>
 						}) }
 						<li>
 							<span className="CustomListNewListItemHolder">
@@ -256,9 +325,10 @@ class RumbleShowdown extends React.Component {
 
 	componentDidMount() {
 		if (!globalState.listName) {
+			console.log("no list name provided, going back to main page");
 			this.props.history.push("/");
 		}
-		let list = globalState.list.items;
+		let list = globalState.list;
 		console.log(list);
 		let idx = Math.floor(Math.random() * list.length);
 		let baseItem = list[idx];
