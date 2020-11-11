@@ -1,8 +1,11 @@
 const { BrowserRouter, Route, Link } = ReactRouterDOM;
 
-let globalState = {listName: "", list: []};
+const backendURL = "https://rumblerank.herokuapp.com"
 
-function selectList(listName, list) {
+let globalState = {id: null, listType: null, listName: "", list: []};
+
+function selectList(id, listName, list) {
+	globalState["id"] = id;
 	globalState["listName"] = listName;
 	globalState["list"] = list;
 }
@@ -79,6 +82,7 @@ class RumbleContainer extends React.Component {
 			<BrowserRouter>
 				<Route exact path="/" component={RumbleMainMenu} />
 				<Route path="/PresetLists" component={RumblePresetListsMenu} />
+				<Route path="/CustomLists" component={RumbleCustomListsMenu} />
 				<Route path="/CreateList" component={RumbleCreateList} />
 				<Route path="/Showdown" component={RumbleShowdown} />
 				<Route path="/List" component={RumbleListDisplay} />
@@ -114,7 +118,14 @@ class RumbleMainMenu extends React.Component {
 					<div className="row mb-4">
 						<div className="col">
 							<Link to="/PresetLists">
-								<button type="button" className="btn btn-light">Preset List</button>
+								<button type="button" className="btn btn-light">Browse Preset Lists</button>
+							</Link>
+						</div>
+					</div>
+					<div className="row mb-4">
+						<div className="col">
+							<Link to="/CustomLists">
+								<button type="button" className="btn btn-light">Browse Custom Lists</button>
 							</Link>
 						</div>
 					</div>
@@ -138,7 +149,8 @@ class RumbleListsMenu extends React.Component {
 	}
 
 	componentDidMount() {
-		fetch(`https://rumblerank.herokuapp.com/${this.props.listType}`)
+		globalState["listType"] = this.props.listType;
+		fetch(`${backendURL}/${this.props.listType}`)
 		.then(r => r.json())
 		.then(json => {
 			let lists = []
@@ -165,7 +177,7 @@ class RumbleListsMenu extends React.Component {
 								return(
 									<div className="mb-4" id={ l.id }>
 										<Link to="/Showdown">
-											<button type="button" className="btn btn-light" onClick={ () => selectList(l.title, l.contents) }>{ l.title }</button>
+											<button type="button" className="btn btn-light" onClick={ () => selectList(l.id, l.title, l.contents) }>{ l.title }</button>
 										</Link>
 									</div>
 								);
@@ -213,7 +225,9 @@ class RumbleShare extends React.Component {
 	componentDidMount() {
 		const search = location.search;
 		const id = new URLSearchParams(search).get("id");
-		fetch(`https://rumblerank.herokuapp.com/${this.props.listType}?id=${id}`)
+		globalState.listType = this.props.listType;
+		globalState.id = id;
+		fetch(`${backendURL}/${this.props.listType}?id=${id}`)
 		.then(r => r.json())
 		.then(json => {
 			if (json.length) {
@@ -267,6 +281,11 @@ class RumbleCreateList extends React.Component {
 		this.addNewItem = this.addNewItem.bind(this);
 		this.removeItem = this.removeItem.bind(this);
 		this.submitList = this.submitList.bind(this);
+	}
+
+	componentDidMount() {
+		globalState.listType = "custom";
+		globalState.id = null;
 	}
 
 	addNewItem() {
@@ -404,6 +423,7 @@ class RumbleShowdown extends React.Component {
 class RumbleListDisplay extends React.Component {
 	constructor(props) {
 		super(props);
+		this.state = {shareLink: `${location.origin}?share=${globalState.listType}&id=${globalState.id}`, showShare: false};
 	}
 
 	componentDidMount() {
@@ -413,6 +433,33 @@ class RumbleListDisplay extends React.Component {
 	}
 
 	render() {
+
+		let share = <button
+						type="button"
+						className="btn btn-light"
+						onClick={ () => {
+							if (globalState.id) {
+								this.setState({showShare: true});
+							} else {
+								let formData = new FormData();
+								formData.append("title", globalState.listName);
+								formData.append("contents", JSON.stringify(globalState.list));
+								fetch(`${backendURL}/custom`,{
+								  method: "POST",
+								  body: formData
+								})
+								.then(r => r.json())
+								.then(json => this.setState({shareLink: `${location.origin}?share=${globalState.listType}&id=${json.id}`, showShare: true}));
+							}
+						} }
+					>
+						Share this list?
+					</button>;
+
+		if (this.state.showShare) {
+			share = <div className="listShare">{ this.state.shareLink }</div>
+		}
+
 		return(
 			<div className="container text-center">
 				<h1 className="mb-4">{ globalState.listName } Ranked</h1>
@@ -421,9 +468,14 @@ class RumbleListDisplay extends React.Component {
 						return <li>{item.name}</li>;
 					}) }
 				</ol>
-				<Link to="/">
-					<button type="button" className="btn btn-light">Back</button>
-				</Link>
+				<div className="mb-4">
+					{ share }
+				</div>
+				<div className="mb-4">
+					<Link to="/">
+						<button type="button" className="btn btn-light">Back</button>
+					</Link>
+				</div>
 			</div>
 		);
 	}
