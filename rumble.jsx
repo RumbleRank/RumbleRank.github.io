@@ -78,7 +78,7 @@ class RumbleContainer extends React.Component {
 		return(
 			<HashRouter>
 				<Route exact path="/" component={RumbleMainMenu} />
-				<Route path="/PresetLists" component={RumbleListsMenu} />
+				<Route path="/PresetLists" component={RumblePresetListsMenu} />
 				<Route path="/CreateList" component={RumbleCreateList} />
 				<Route path="/Showdown" component={RumbleShowdown} />
 				<Route path="/List" component={RumbleListDisplay} />
@@ -120,14 +120,23 @@ class RumbleMainMenu extends React.Component {
 class RumbleListsMenu extends React.Component {
 	constructor(props) {
 		super(props);
-		this.state = {lists: {}, ready: false};
+		this.state = {lists: [], ready: false};
 	}
 
 	componentDidMount() {
-		fetch("./lists.json")
+		fetch(`https://rumblerank.herokuapp.com/${this.props.listType}`)
 		.then(r => r.json())
 		.then(json => {
-			this.setState({lists: json, ready: true});
+			let lists = []
+			for (let jsonList of json) {
+				try {
+					lists.push({id: jsonList["id"], "title": jsonList["title"], contents: JSON.parse(jsonList.contents)});
+				} catch(e) {
+					console.error("Could not load list");
+					console.error(jsonList.contents);
+				}
+			}
+			this.setState({lists: lists, ready: true});
 		});
 	}
 
@@ -137,12 +146,12 @@ class RumbleListsMenu extends React.Component {
 				<div className="text-center">
 					<h1 className="mb-4">Choose a List</h1>
 					<div className="container">
-						{ Object.keys(this.state.lists).map(
+						{ this.state.lists.map(
 							l => {
 								return(
-									<div className="mb-4">
+									<div className="mb-4" id={ l.id }>
 										<Link to="/Showdown">
-											<button type="button" className="btn btn-light" onClick={ () => selectList(l, this.state.lists[l]) }>{ l }</button>
+											<button type="button" className="btn btn-light" onClick={ () => selectList(l.title, l.contents) }>{ l.title }</button>
 										</Link>
 									</div>
 								);
@@ -159,6 +168,26 @@ class RumbleListsMenu extends React.Component {
 		}
 
 		return <div />;
+	}
+}
+
+class RumblePresetListsMenu extends React.Component {
+	constructor(props) {
+		super(props)
+	}
+
+	render() {
+		return <RumbleListsMenu listType="presets" />
+	}
+}
+
+class RumbleCustomListsMenu extends React.Component {
+	constructor(props) {
+		super(props)
+	}
+
+	render() {
+		return <RumbleListsMenu listType="custom" />
 	}
 }
 
@@ -229,7 +258,8 @@ class RumbleShowdown extends React.Component {
 		if (!globalState.listName) {
 			this.props.history.push("/");
 		}
-		let list = globalState.list;
+		let list = globalState.list.items;
+		console.log(list);
 		let idx = Math.floor(Math.random() * list.length);
 		let baseItem = list[idx];
 		list = [...list.slice(0, idx), ...list.slice(idx + 1)];
@@ -254,10 +284,10 @@ class RumbleShowdown extends React.Component {
 			<div className="container-fluid h-100 p-2">
 				<div className="row h-100">
 					<div className="col-xs-12 col-sm-6 ShowdownCorner RedCorner" onClick={ () => this.nextComparison("comparing") }>
-						{ comparingVal }
+						{ comparingVal.name }
 					</div>
 					<div className="col-xs-12 col-sm-6 ShowdownCorner BlueCorner" onClick={ () => this.nextComparison("deciding") }>
-						{ decidingVal }
+						{ decidingVal.name }
 					</div>
 				</div>
 			</div>
@@ -318,11 +348,11 @@ class RumbleListDisplay extends React.Component {
 				<h1 className="mb-4">{ globalState.listName } Ranked</h1>
 				<ol>
 					{ globalState.list.map(item => {
-						return <li>{item}</li>;
+						return <li>{item.name}</li>;
 					}) }
 				</ol>
 				<Link to="/">
-					<button	 type="button" className="btn btn-light">Back</button>
+					<button type="button" className="btn btn-light">Back</button>
 				</Link>
 			</div>
 		);
