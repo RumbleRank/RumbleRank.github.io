@@ -8,73 +8,73 @@ function selectList(listName, list) {
 }
 
 class TreeNode {
-    constructor(val) {
-        this.val = val;
-        this.lchild = null;
-        this.rchild = null;
-        this.parent = null;
-    }
+	constructor(val) {
+		this.val = val;
+		this.lchild = null;
+		this.rchild = null;
+		this.parent = null;
+	}
 
-    totalNodes() {
-        let lchildren = 0;
-        let rchildren = 0;
-        if (this.lchild) {
-            lchildren = this.lchild.totalNodes();
-        }
-        if (this.rchild) {
-            rchildren = this.rchild.totalNodes();
-        }
-        return lchildren + rchildren + 1;
-    }
+	totalNodes() {
+		let lchildren = 0;
+		let rchildren = 0;
+		if (this.lchild) {
+			lchildren = this.lchild.totalNodes();
+		}
+		if (this.rchild) {
+			rchildren = this.rchild.totalNodes();
+		}
+		return lchildren + rchildren + 1;
+	}
 
-    depth() {
-        let ldepth = 1;
-        let rdepth = 1;
-        if (this.lchild) {
-            ldepth = this.lchild.depth() + 1;
-        }
-        if (this.rchild) {
-            rdepth = this.rchild.depth() + 1;
-        }
-        return Math.max(ldepth, rdepth);
-    }
+	depth() {
+		let ldepth = 1;
+		let rdepth = 1;
+		if (this.lchild) {
+			ldepth = this.lchild.depth() + 1;
+		}
+		if (this.rchild) {
+			rdepth = this.rchild.depth() + 1;
+		}
+		return Math.max(ldepth, rdepth);
+	}
 
-    toList() {
-        let llist = [];
-        let rlist = [];
-        if (this.lchild) {
-            llist = this.lchild.toList();
-        }
-        if (this.rchild) {
-            rlist = this.rchild.toList();
-        }
-        return [...rlist, this.val, ...llist];
-    }
+	toList() {
+		let llist = [];
+		let rlist = [];
+		if (this.lchild) {
+			llist = this.lchild.toList();
+		}
+		if (this.rchild) {
+			rlist = this.rchild.toList();
+		}
+		return [...rlist, this.val, ...llist];
+	}
 
-    setLeftChild(value) {
-        this.lchild = new TreeNode(value);
-        this.lchild.parent = this;
-    }
+	setLeftChild(value) {
+		this.lchild = new TreeNode(value);
+		this.lchild.parent = this;
+	}
 
-    setRightChild(value) {
-        this.rchild = new TreeNode(value);
-        this.rchild.parent = this;
-    }
+	setRightChild(value) {
+		this.rchild = new TreeNode(value);
+		this.rchild.parent = this;
+	}
 
-    getTreeRoot() {
-        if (this.parent) {
-            return this.parent.getTreeRoot();
-        }
-        return this;
-    }
+	getTreeRoot() {
+		if (this.parent) {
+			return this.parent.getTreeRoot();
+		}
+		return this;
+	}
 }
 
 class RumbleContainer extends React.Component {
-    constructor(props) {
-        super(props);
-    }
+	constructor(props) {
+		super(props);
+	}
 
-    render() {
+	render() {
 		return(
 			<HashRouter>
 				<Route exact path="/" component={RumbleMainMenu} />
@@ -84,16 +84,16 @@ class RumbleContainer extends React.Component {
 				<Route path="/List" component={RumbleListDisplay} />
 			</HashRouter>
 		);
-    }
+	}
 }
 
 class RumbleMainMenu extends React.Component {
-    constructor(props) {
-        super(props);
-    }
+	constructor(props) {
+		super(props);
+	}
 
-    render() {
-        return(
+	render() {
+		return(
 			<div className="text-center">
 				<h1 className="mb-4">RumbleRank</h1>
 				<div className="container">
@@ -113,8 +113,8 @@ class RumbleMainMenu extends React.Component {
 					</div>
 				</div>
 			</div>
-        );
-    }
+		);
+	}
 }
 
 class RumbleListsMenu extends React.Component {
@@ -150,7 +150,7 @@ class RumbleListsMenu extends React.Component {
 						)}
 						<div>
 							<Link to="/">
-								<button  type="button" className="btn btn-light">Back</button>
+								<button	 type="button" className="btn btn-light">Back</button>
 							</Link>
 						</div>
 					</div>
@@ -222,33 +222,33 @@ class RumbleShowdown extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {red: "", blue: "", inputList: [], comparing: null, deciding: null};
-        this.nextComparison = this.nextComparison.bind(this);
+		this.nextComparison = this.nextComparison.bind(this);
 	}
 
 	componentDidMount() {
 		if (!globalState.listName) {
 			this.props.history.push("/");
 		}
-        let list = globalState.list;
-        let idx = Math.floor(Math.random() * list.length);
-        let baseItem = list[idx];
-        list = [...list.slice(0, idx), ...list.slice(idx + 1)];
-        let baseNode = new TreeNode(baseItem);
-        let decidingIdx = Math.floor(Math.random() * list.length);
-        let decidingItem = list[decidingIdx];
-        list = [...list.slice(0, decidingIdx), ...list.slice(decidingIdx + 1)];
-        this.setState({list: list, comparing: baseNode, deciding: decidingItem});
+		let list = globalState.list;
+		let idx = Math.floor(Math.random() * list.length);
+		let baseItem = list[idx];
+		list = [...list.slice(0, idx), ...list.slice(idx + 1)];
+		let baseNode = new TreeNode(baseItem);
+		let decidingIdx = Math.floor(Math.random() * list.length);
+		let decidingItem = list[decidingIdx];
+		list = [...list.slice(0, decidingIdx), ...list.slice(decidingIdx + 1)];
+		this.setState({list: list, comparing: baseNode, deciding: decidingItem});
 	}
 
 	render() {
-        let comparingVal = "";
-        let decidingVal = "";
-        if (this.state.comparing) {
-            comparingVal = this.state.comparing.val;
-        }
-        if (this.state.deciding) {
-            decidingVal = this.state.deciding;
-        }
+		let comparingVal = "";
+		let decidingVal = "";
+		if (this.state.comparing) {
+			comparingVal = this.state.comparing.val;
+		}
+		if (this.state.deciding) {
+			decidingVal = this.state.deciding;
+		}
 
 		return(
 			<div className="container-fluid h-100 p-2">
@@ -264,41 +264,41 @@ class RumbleShowdown extends React.Component {
 		);
 	}
 
-    nextComparison(winner) {
-        if (winner === "comparing") {
-            if (this.state.comparing.lchild) {
-                this.setState({comparing: this.state.comparing.lchild});
-            } else {
-                let comparing = this.state.comparing;
-                comparing.setLeftChild(this.state.deciding);
-                let list = this.state.list;
-                let decidingIdx = Math.floor(Math.random() * list.length);
-                let decidingItem = list[decidingIdx];
-                list = [...list.slice(0, decidingIdx), ...list.slice(decidingIdx + 1)];
-                this.setState({list: list, comparing: comparing.getTreeRoot(), deciding: decidingItem}, this.checkIfDone);
-            }
-        } else if (winner === "deciding") {
+	nextComparison(winner) {
+		if (winner === "comparing") {
+			if (this.state.comparing.lchild) {
+				this.setState({comparing: this.state.comparing.lchild});
+			} else {
+				let comparing = this.state.comparing;
+				comparing.setLeftChild(this.state.deciding);
+				let list = this.state.list;
+				let decidingIdx = Math.floor(Math.random() * list.length);
+				let decidingItem = list[decidingIdx];
+				list = [...list.slice(0, decidingIdx), ...list.slice(decidingIdx + 1)];
+				this.setState({list: list, comparing: comparing.getTreeRoot(), deciding: decidingItem}, this.checkIfDone);
+			}
+		} else if (winner === "deciding") {
 
-            if (this.state.comparing.rchild) {
-                this.setState({comparing: this.state.comparing.rchild});
-            } else {
-                let comparing = this.state.comparing;
-                comparing.setRightChild(this.state.deciding);
-                let list = this.state.list;
-                let decidingIdx = Math.floor(Math.random() * list.length);
-                let decidingItem = list[decidingIdx];
-                list = [...list.slice(0, decidingIdx), ...list.slice(decidingIdx + 1)];
-                this.setState({list: list, comparing: comparing.getTreeRoot(), deciding: decidingItem}, this.checkIfDone);
-            }
-        }
-    }
+			if (this.state.comparing.rchild) {
+				this.setState({comparing: this.state.comparing.rchild});
+			} else {
+				let comparing = this.state.comparing;
+				comparing.setRightChild(this.state.deciding);
+				let list = this.state.list;
+				let decidingIdx = Math.floor(Math.random() * list.length);
+				let decidingItem = list[decidingIdx];
+				list = [...list.slice(0, decidingIdx), ...list.slice(decidingIdx + 1)];
+				this.setState({list: list, comparing: comparing.getTreeRoot(), deciding: decidingItem}, this.checkIfDone);
+			}
+		}
+	}
 
-    checkIfDone() {
-        if (!this.state.deciding) {
-            globalState.list = this.state.comparing.toList();
-            this.props.history.push("/List");
-        }
-    }
+	checkIfDone() {
+		if (!this.state.deciding) {
+			globalState.list = this.state.comparing.toList();
+			this.props.history.push("/List");
+		}
+	}
 }
 
 class RumbleListDisplay extends React.Component {
@@ -322,7 +322,7 @@ class RumbleListDisplay extends React.Component {
 					}) }
 				</ol>
 				<Link to="/">
-					<button  type="button" className="btn btn-light">Back</button>
+					<button	 type="button" className="btn btn-light">Back</button>
 				</Link>
 			</div>
 		);
